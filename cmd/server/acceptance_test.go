@@ -322,12 +322,13 @@ func TestBusinessAcceptance(t *testing.T) {
 	if err = database.QueryRowContext(ctx, "SELECT status FROM todos WHERE id = ?", second.Id).Scan(&storedStatus); err != nil || storedStatus != 2 {
 		t.Fatalf("soft delete: status=%d err=%v", storedStatus, err)
 	}
+	verifyConcurrentUpdates(t, ctx, client, created.Id, prefix)
 	runConcurrentReads(t, ctx, client, created.Id)
 	app.stop()
 	restarted := startService(t, binary, dsn)
 	afterRestart := httpClient(t, ctx, restarted.httpURL)
 	persisted, err := afterRestart.GetTodo(ctx, &v1.GetTodoRequest{Id: created.Id})
-	if err != nil || persisted.Title != created.Title {
+	if err != nil || persisted.Title != prefix+"-concurrent-24" {
 		t.Fatalf("restart persistence: %v %v", persisted, err)
 	}
 }
@@ -377,5 +378,41 @@ func runConcurrentReads(t *testing.T, ctx context.Context, client v1.TodoService
 	t.Logf("load duration=%s concurrency=8 requests=%d failures=%d p50=%s p95=%s p99=%s", duration, len(latencies), failures, percentile(50), percentile(95), percentile(99))
 	if failures != 0 {
 		t.Fatalf("load failures: %d, first: %s", failures, firstFailure)
+	}
+}
+
+func verifyConcurrentUpdates(t *testing.T, ctx context.Context, client v1.TodoServiceHTTPClient, id, prefix string) {
+	t.Helper()
+	start := make(chan struct{})
+	failures := make(chan error, 2)
+	var wait sync.WaitGroup
+	for _, field := range []string{"title", "content"} {
+		wait.Add(1)
+		go func(field string) {
+			defer wait.Done()
+			<-start
+			for i := 0; i < 25; i++ {
+				todo := &v1.Todo{Id: id}
+				if field == "title" {
+					todo.Title = fmt.Sprintf("%s-concurrent-%d", prefix, i)
+				} else {
+					todo.Content = fmt.Sprintf("content-%d", i)
+				}
+				if _, err := client.UpdateTodo(ctx, &v1.UpdateTodoRequest{Todo: todo, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{field}}}); err != nil {
+					failures <- err
+					return
+				}
+			}
+		}(field)
+	}
+	close(start)
+	wait.Wait()
+	close(failures)
+	for err := range failures {
+		t.Fatal(err)
+	}
+	got, err := client.GetTodo(ctx, &v1.GetTodoRequest{Id: id})
+	if err != nil || got.Title != prefix+"-concurrent-24" || got.Content != "content-24" {
+		t.Fatalf("concurrent masked updates: %v %v", got, err)
 	}
 }

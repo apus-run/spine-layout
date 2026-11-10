@@ -135,7 +135,18 @@ func (s *TodoService) UpdateTodo(ctx context.Context, req *v1.UpdateTodoRequest)
 		return nil, err
 	}
 	fieldmask.Update(mask, current, req.GetTodo())
-	todo, err := s.uc.UpdateTodo(ctx, convertTodo(current))
+	fields := make([]biz.TodoField, 0, len(mask.Paths))
+	for _, path := range mask.Paths {
+		switch path {
+		case "title":
+			fields = append(fields, biz.TodoTitle)
+		case "content":
+			fields = append(fields, biz.TodoContent)
+		case "completed":
+			fields = append(fields, biz.TodoCompleted)
+		}
+	}
+	todo, err := s.uc.UpdateTodo(ctx, convertTodo(current), fields...)
 	if err != nil {
 		return nil, err
 	}

@@ -75,12 +75,25 @@ func (r *fakeTodoRepo) CreateTodo(_ context.Context, todo *biz.Todo) (*biz.Todo,
 	return cloneTodo(todo), nil
 }
 
-func (r *fakeTodoRepo) UpdateTodo(_ context.Context, todo *biz.Todo) (*biz.Todo, error) {
+func (r *fakeTodoRepo) UpdateTodo(_ context.Context, todo *biz.Todo, fields ...biz.TodoField) (*biz.Todo, error) {
 	current, ok := r.todos[todo.ID]
 	if !ok {
 		return nil, biz.ErrTodoNotFound
 	}
-	updated := cloneTodo(todo)
+	updated := cloneTodo(current)
+	if len(fields) == 0 {
+		fields = []biz.TodoField{biz.TodoTitle, biz.TodoContent, biz.TodoCompleted}
+	}
+	for _, field := range fields {
+		switch field {
+		case biz.TodoTitle:
+			updated.Title = todo.Title
+		case biz.TodoContent:
+			updated.Content = todo.Content
+		case biz.TodoCompleted:
+			updated.Completed = todo.Completed
+		}
+	}
 	// status moves only through DeleteTodo, matching the real repo.
 	updated.Status = current.Status
 	updated.CreatedAt = current.CreatedAt
@@ -421,5 +434,44 @@ func TestTodoServiceRejectsInvalidUpdateMasks(t *testing.T) {
 	got, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: created.Id})
 	if err != nil || got.Title != "original" {
 		t.Fatalf("invalid mask changed record: %v %v", got, err)
+	}
+}
+
+// Simulate another writer committing after the service reads its snapshot.
+type interveningTodoRepo struct {
+	biz.TodoRepo
+	changed bool
+}
+
+func (r *interveningTodoRepo) FindByID(ctx context.Context, id uuid.UUID) (*biz.Todo, error) {
+	snapshot, err := r.TodoRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if !r.changed {
+		r.changed = true
+		other := *snapshot
+		other.Content = "other client's change"
+		if _, err = r.TodoRepo.UpdateTodo(ctx, &other); err != nil {
+			return nil, err
+		}
+	}
+	return snapshot, nil
+}
+
+func TestTodoServiceMaskPreservesInterveningWrites(t *testing.T) {
+	ctx := context.Background()
+	repo := newFakeTodoRepo()
+	original, err := repo.CreateTodo(ctx, &biz.Todo{Title: "original", Content: "original content"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc := NewTodoService(biz.NewTodoUsecase(&interveningTodoRepo{TodoRepo: repo}))
+	updated, err := svc.UpdateTodo(ctx, &v1.UpdateTodoRequest{Todo: &v1.Todo{Id: original.ID.String(), Title: "new title"}, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"title"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.Title != "new title" || updated.Content != "other client's change" {
+		t.Fatalf("unmasked concurrent change lost: %v", updated)
 	}
 }

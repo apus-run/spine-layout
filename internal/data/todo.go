@@ -93,14 +93,25 @@ func (r *todoRepo) CreateTodo(ctx context.Context, t *biz.Todo) (*biz.Todo, erro
 	return toBiz(po), nil
 }
 
-func (r *todoRepo) UpdateTodo(ctx context.Context, t *biz.Todo) (*biz.Todo, error) {
+func (r *todoRepo) UpdateTodo(ctx context.Context, t *biz.Todo, fields ...biz.TodoField) (*biz.Todo, error) {
 	// status is not updatable here: it moves only through DeleteTodo.
-	po, err := r.data.db.Todo.UpdateOneID(t.ID).
-		Where(todo.StatusEQ(biz.TodoStatusActive)).
-		SetTitle(t.Title).
-		SetContent(t.Content).
-		SetCompleted(t.Completed).
-		Save(ctx)
+	if len(fields) == 0 {
+		fields = []biz.TodoField{biz.TodoTitle, biz.TodoContent, biz.TodoCompleted}
+	}
+	update := r.data.db.Todo.UpdateOneID(t.ID).Where(todo.StatusEQ(biz.TodoStatusActive))
+	for _, field := range fields {
+		switch field {
+		case biz.TodoTitle:
+			update.SetTitle(t.Title)
+		case biz.TodoContent:
+			update.SetContent(t.Content)
+		case biz.TodoCompleted:
+			update.SetCompleted(t.Completed)
+		default:
+			return nil, biz.ErrTodoInvalidArgument
+		}
+	}
+	po, err := update.Save(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, biz.ErrTodoNotFound

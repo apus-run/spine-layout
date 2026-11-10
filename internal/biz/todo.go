@@ -45,12 +45,21 @@ type Todo struct {
 	UpdatedAt time.Time
 }
 
+// TodoField identifies a mutable domain field for partial updates.
+type TodoField string
+
+const (
+	TodoTitle     TodoField = "title"
+	TodoContent   TodoField = "content"
+	TodoCompleted TodoField = "completed"
+)
+
 // TodoRepo is a todo repo.
 type TodoRepo interface {
 	FindByID(context.Context, uuid.UUID) (*Todo, error)
 	ListTodos(context.Context, ...ListOption) ([]*Todo, error)
 	CreateTodo(context.Context, *Todo) (*Todo, error)
-	UpdateTodo(context.Context, *Todo) (*Todo, error)
+	UpdateTodo(context.Context, *Todo, ...TodoField) (*Todo, error)
 	DeleteTodo(context.Context, uuid.UUID) error
 }
 
@@ -125,14 +134,21 @@ func (uc *TodoUsecase) CreateTodo(ctx context.Context, todo *Todo) (*Todo, error
 }
 
 // UpdateTodo updates a todo.
-func (uc *TodoUsecase) UpdateTodo(ctx context.Context, todo *Todo) (*Todo, error) {
+func (uc *TodoUsecase) UpdateTodo(ctx context.Context, todo *Todo, fields ...TodoField) (*Todo, error) {
 	if todo == nil || todo.ID == uuid.Nil {
 		return nil, ErrTodoInvalidArgument
 	}
 	if err := validateTodo(todo); err != nil {
 		return nil, err
 	}
-	return uc.repo.UpdateTodo(ctx, todo)
+	for _, field := range fields {
+		switch field {
+		case TodoTitle, TodoContent, TodoCompleted:
+		default:
+			return nil, ErrTodoInvalidArgument
+		}
+	}
+	return uc.repo.UpdateTodo(ctx, todo, fields...)
 }
 
 // DeleteTodo soft-deletes a todo.

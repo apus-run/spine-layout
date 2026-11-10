@@ -5,8 +5,8 @@ Wire dependency injection, Ent, and MySQL. The Todo service demonstrates CRUD,
 filtering, ordering, pagination, field-mask updates, snapshot streaming and
 bidirectional synchronization.
 
-The module path is `github.com/apus-run/spine-layout`. Spine and its OpenTelemetry
-integration are pinned to v3.1.0 in `go.mod`. Both Spine
+The module path is `github.com/apus-run/spine-layout`. Spine is pinned to the post-v3.1.0 header-ownership fix in `go.mod`.
+Its OpenTelemetry integration is pinned to v3.1.0. Both Spine
 protobuf generators are pinned in `buf.gen.yaml` and run through Buf.
 
 ## Generate, build and test
@@ -65,6 +65,7 @@ uses the generated HTTP and gRPC clients, and verifies:
 - Generated error predicates for invalid requests and missing/deleted records.
 - SSE snapshot events and WebSocket create/update/delete events with clean EOF.
 - SQL soft-delete state, application shutdown and reads after process restart.
+- Concurrent masked writers preserve each other's unselected fields.
 - Eight concurrent readers for 30 seconds, recording request count and latency
   percentiles with zero failures required.
 

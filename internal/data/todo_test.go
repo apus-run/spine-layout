@@ -265,3 +265,26 @@ func TestTodoRepoListOrderByDesc(t *testing.T) {
 		t.Fatalf("ListTodos(order desc) = %q..%q, want gamma..alpha", todos[0].Title, todos[2].Title)
 	}
 }
+
+func TestTodoRepoPartialUpdatePreservesOtherFields(t *testing.T) {
+	ctx := context.Background()
+	repo, _ := newTestRepo(t)
+	original, err := repo.CreateTodo(ctx, &biz.Todo{Title: "original", Content: "old content"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	stale := *original
+	other := *original
+	other.Content = "other writer"
+	if _, err = repo.UpdateTodo(ctx, &other); err != nil {
+		t.Fatal(err)
+	}
+	stale.Title = "new title"
+	got, err := repo.UpdateTodo(ctx, &stale, biz.TodoTitle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Title != "new title" || got.Content != "other writer" {
+		t.Fatalf("partial update overwrote unselected fields: %v", got)
+	}
+}
