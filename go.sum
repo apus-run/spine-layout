@@ -12,10 +12,10 @@ github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7l
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/apparentlymart/go-textseg/v15 v15.0.0 h1:uYvfpb3DyLSCGWnctWKGj857c6ew1u1fNQOlOtuGxQY=
 github.com/apparentlymart/go-textseg/v15 v15.0.0/go.mod h1:K8XmNZdhEBkdlyDdvbmmsvpAG721bKi0joRfFdHIWJ4=
-github.com/apus-run/spine/contrib/otel/v3 v3.0.0-20261110034553-d0c788654e68 h1:cDFeYoy2Q1zKDEP5hf4yo5S0cNr+tPBvqauGmDAgksI=
-github.com/apus-run/spine/contrib/otel/v3 v3.0.0-20261110034553-d0c788654e68/go.mod h1:bfFREXWcW0i2ispjmkZ7q8DZGxu05Xttk5Z50HkMgIM=
-github.com/apus-run/spine/v3 v3.0.0-20261110042908-fb0c55abf504 h1:feQ3zA5NOwd+lZvidYggIb/N6SVLMB/spF6u/MZpMvY=
-github.com/apus-run/spine/v3 v3.0.0-20261110042908-fb0c55abf504/go.mod h1:o5OC98pdADTLNbpH4jARuzBrO3Wvyspbg0gICRajXxo=
+github.com/apus-run/spine/contrib/otel/v3 v3.1.0 h1:9VrvTD+4Np4E2hatN2mfLsFFYFkmoGiGpUlpYXmUi84=
+github.com/apus-run/spine/contrib/otel/v3 v3.1.0/go.mod h1:saBv1PWqpC3RmNLFbZuK3U9Jg+smoISnqVQBMJYo/vY=
+github.com/apus-run/spine/v3 v3.1.0 h1:U+ttuYmqQBK9gxpYUORAIy/5eTj/O5feZBienNZFG4w=
+github.com/apus-run/spine/v3 v3.1.0/go.mod h1:o5OC98pdADTLNbpH4jARuzBrO3Wvyspbg0gICRajXxo=
 github.com/bmatcuk/doublestar v1.3.4 h1:gPypJ5xD31uhX6Tf54sDPUOBXTqKH4c9aPY66CyQrS0=
 github.com/bmatcuk/doublestar v1.3.4/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

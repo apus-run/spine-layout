@@ -6,7 +6,7 @@ filtering, ordering, pagination, field-mask updates, snapshot streaming and
 bidirectional synchronization.
 
 The module path is `github.com/apus-run/spine-layout`. Spine and its OpenTelemetry
-integration are pinned to immutable public commits in `go.mod`. Both Spine
+integration are pinned to v3.1.0 in `go.mod`. Both Spine
 protobuf generators are pinned in `buf.gen.yaml` and run through Buf.
 
 ## Generate, build and test
@@ -22,7 +22,7 @@ go vet ./...
 `make all` regenerates API/error bindings, OpenAPI, configuration messages, Ent
 and Wire, then tidies the module. Buf is pinned to v1.75.0. API generation uses
 protoc-gen-go v1.36.11, protoc-gen-go-grpc v1.6.2 and the Spine HTTP/errors
-plugins from commit `a1be599b`. The error annotation schema in
+plugins at v3.1.0. The error annotation schema in
 `api/errors/errors.proto` comes from Spine; only the Todo API is generated.
 
 Generated code belongs with its proto/schema sources. Regenerate after changing
