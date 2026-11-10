@@ -5,7 +5,7 @@ go 1.27.3
 require (
 	entgo.io/ent v0.14.6
 	github.com/apus-run/spine/contrib/otel/v3 v3.1.0
-	github.com/apus-run/spine/v3 v3.1.1-0.20261110062239-5d4ae3d57cc8
+	github.com/apus-run/spine/v3 v3.1.1-0.20261110062706-d09242a2acff
 	github.com/go-kratos/aip-go/ents v0.0.0-20260901003907-1ab5471e605b
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/google/uuid v1.6.0

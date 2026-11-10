@@ -14,8 +14,8 @@ github.com/apparentlymart/go-textseg/v15 v15.0.0 h1:uYvfpb3DyLSCGWnctWKGj857c6ew
 github.com/apparentlymart/go-textseg/v15 v15.0.0/go.mod h1:K8XmNZdhEBkdlyDdvbmmsvpAG721bKi0joRfFdHIWJ4=
 github.com/apus-run/spine/contrib/otel/v3 v3.1.0 h1:9VrvTD+4Np4E2hatN2mfLsFFYFkmoGiGpUlpYXmUi84=
 github.com/apus-run/spine/contrib/otel/v3 v3.1.0/go.mod h1:saBv1PWqpC3RmNLFbZuK3U9Jg+smoISnqVQBMJYo/vY=
-github.com/apus-run/spine/v3 v3.1.1-0.20261110062239-5d4ae3d57cc8 h1:ECeuFNsi3PFKCVNwu7kJvNFlleS6Q/GCEbIzN9dYY94=
-github.com/apus-run/spine/v3 v3.1.1-0.20261110062239-5d4ae3d57cc8/go.mod h1:o5OC98pdADTLNbpH4jARuzBrO3Wvyspbg0gICRajXxo=
+github.com/apus-run/spine/v3 v3.1.1-0.20261110062706-d09242a2acff h1:yUhZDMe2h3br87Ng0d2pzjH3XSwniiIo5P1OH7SmaC4=
+github.com/apus-run/spine/v3 v3.1.1-0.20261110062706-d09242a2acff/go.mod h1:o5OC98pdADTLNbpH4jARuzBrO3Wvyspbg0gICRajXxo=
 github.com/bmatcuk/doublestar v1.3.4 h1:gPypJ5xD31uhX6Tf54sDPUOBXTqKH4c9aPY66CyQrS0=
 github.com/bmatcuk/doublestar v1.3.4/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
