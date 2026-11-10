@@ -6,44 +6,44 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: Build
+    name: Build and business acceptance
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: spine_layout_acceptance
+          MYSQL_ROOT_PASSWORD: acceptance-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
-
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v5.0.0
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: ^1.20
-
-      - name: Setup Environment
+          go-version-file: go.mod
+          cache: true
+      - name: Verify generation
         run: |
-          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Module cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go
-
-      - name: Get dependencies
+          make all
+          git diff --exit-code -- api internal/conf internal/data/ent cmd/server/wire_gen.go openapi.yaml go.mod go.sum
+      - name: Build and unit tests
         run: |
-          go get -v -t -d ./...
-          if [ -f Gopkg.toml ]; then
-              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-              dep ensure
-          fi
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Test
-        run: go test -v ./...
+          make build
+          go test -race ./...
+          go vet ./...
+      - name: Business acceptance with MySQL
+        env:
+          SPINE_LAYOUT_TEST_DSN: root:acceptance-only@tcp(127.0.0.1:3306)/spine_layout_acceptance?parseTime=true&loc=UTC&charset=utf8mb4
+        run: go test -tags=integration -race -count=1 -timeout=4m -v ./cmd/server
+      - name: Check reachable vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...

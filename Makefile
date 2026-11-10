@@ -1,22 +1,23 @@
 GOHOSTOS:=$(shell go env GOHOSTOS)
 GOPATH:=$(shell go env GOPATH)
 VERSION=$(shell git describe --tags --always)
+BUF ?= go run github.com/bufbuild/buf/cmd/buf@v1.75.0
 
 .PHONY: init
 # init env
 init:
-	go install github.com/google/wire/cmd/wire@latest
-	go install github.com/bufbuild/buf/cmd/buf@latest
+	go mod download
+	$(BUF) --version
 
 .PHONY: config
 # generate internal proto
 config:
-	buf generate --template buf.gen.config.yaml
+	$(BUF) generate --template buf.gen.config.yaml
 
 .PHONY: api
 # generate api proto
 api:
-	buf generate --template buf.gen.yaml
+	$(BUF) generate --template buf.gen.yaml
 
 .PHONY: build
 # build
@@ -26,7 +27,8 @@ build:
 .PHONY: generate
 # generate
 generate:
-	go generate ./...
+	go generate ./internal/data/ent
+	go run -mod=mod github.com/google/wire/cmd/wire ./cmd/server
 	go mod tidy
 
 .PHONY: all

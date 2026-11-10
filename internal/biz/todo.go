@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	v1 "github.com/go-kratos/kratos-layout/api/todo/v1"
+	v1 "github.com/apus-run/spine-layout/api/todo/v1"
 
-	"github.com/go-kratos/kratos/v3/errors"
+	"github.com/apus-run/spine/v3/errors"
 	"github.com/google/uuid"
 	"go.einride.tech/aip/filtering"
 	"go.einride.tech/aip/ordering"

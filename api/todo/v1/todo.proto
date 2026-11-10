@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/go-kratos/kratos-layout/api/todo/v1;v1";
+option go_package = "github.com/apus-run/spine-layout/api/todo/v1;v1";
 option java_multiple_files = true;
 option java_package = "io.grpc.examples.todo.v1";
 option java_outer_classname = "TodoProto";
@@ -44,9 +44,8 @@ service TodoService {
     };
   }
 
-  // WatchTodos opens a server-side stream that emits a TodoEvent for every
-  // create, update, or delete that matches the supplied filter and ordering.
-  // The stream remains open until the client cancels or the server terminates it.
+  // WatchTodos emits one snapshot page matching the supplied filter and
+  // ordering, then closes the stream. Use ListTodos to obtain page tokens.
   rpc WatchTodos (WatchTodosRequest) returns (stream TodoEvent) {
     option (google.api.http) = {
       get: "/v1/todos/watch"
@@ -211,7 +210,7 @@ message SyncTodoRequest {
 // TodoEvent is a server-sent message describing a change to a todo item.
 // It is emitted by both WatchTodos and SyncTodos streams.
 message TodoEvent {
-  // The change that occurred. One of `created`, `updated`, or `deleted`.
+  // The event kind. One of `snapshot`, `created`, `updated`, or `deleted`.
   string action = 1;
   // The todo item after the change. For `deleted` events only the id field
   // is guaranteed to be populated.

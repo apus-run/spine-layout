@@ -2,13 +2,15 @@ syntax = "proto3";
 
 package todo.v1;
 
-option go_package = "github.com/go-kratos/kratos-layout/api/todo/v1;v1";
+import "errors/errors.proto";
+
+option go_package = "github.com/apus-run/spine-layout/api/todo/v1;v1";
 option java_multiple_files = true;
 option java_package = "todo.v1";
 option objc_class_prefix = "APITodoV1";
 
 enum ErrorReason {
   TODO_UNSPECIFIED = 0;
-  TODO_NOT_FOUND = 1;
-  TODO_INVALID_ARGUMENT = 2;
+  TODO_NOT_FOUND = 1 [(errors.code) = 404];
+  TODO_INVALID_ARGUMENT = 2 [(errors.code) = 400];
 }

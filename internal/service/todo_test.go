@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/go-kratos/kratos-layout/api/todo/v1"
-	"github.com/go-kratos/kratos-layout/internal/biz"
+	v1 "github.com/apus-run/spine-layout/api/todo/v1"
+	"github.com/apus-run/spine-layout/internal/biz"
 
-	kratoserrors "github.com/go-kratos/kratos/v3/errors"
+	spineerrors "github.com/apus-run/spine/v3/errors"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -162,7 +162,7 @@ func TestTodoServiceCRUD(t *testing.T) {
 	if _, err := svc.DeleteTodo(ctx, &v1.DeleteTodoRequest{Id: created.GetId()}); err != nil {
 		t.Fatalf("DeleteTodo() error = %v", err)
 	}
-	if _, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: created.GetId()}); !kratoserrors.IsNotFound(err) {
+	if _, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: created.GetId()}); !spineerrors.IsNotFound(err) {
 		t.Fatalf("GetTodo() after delete error = %v, want not found", err)
 	}
 }
@@ -243,31 +243,31 @@ func TestTodoServiceValidation(t *testing.T) {
 	svc := newTestTodoService()
 	missingID := uuid.Must(uuid.NewV7()).String()
 
-	if _, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &v1.Todo{Title: " "}}); !kratoserrors.IsBadRequest(err) {
+	if _, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &v1.Todo{Title: " "}}); !spineerrors.IsBadRequest(err) {
 		t.Fatalf("CreateTodo(empty title) error = %v, want bad request", err)
 	}
-	if _, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: "not-a-uuid"}); !kratoserrors.IsBadRequest(err) {
+	if _, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: "not-a-uuid"}); !spineerrors.IsBadRequest(err) {
 		t.Fatalf("GetTodo(malformed id) error = %v, want bad request", err)
 	}
-	if _, err := svc.DeleteTodo(ctx, &v1.DeleteTodoRequest{Id: ""}); !kratoserrors.IsBadRequest(err) {
+	if _, err := svc.DeleteTodo(ctx, &v1.DeleteTodoRequest{Id: ""}); !spineerrors.IsBadRequest(err) {
 		t.Fatalf("DeleteTodo(empty id) error = %v, want bad request", err)
 	}
 	if _, err := svc.UpdateTodo(ctx, &v1.UpdateTodoRequest{
 		Todo:       &v1.Todo{Id: missingID, Title: "missing mask"},
 		UpdateMask: &fieldmaskpb.FieldMask{},
-	}); !kratoserrors.IsBadRequest(err) {
+	}); !spineerrors.IsBadRequest(err) {
 		t.Fatalf("UpdateTodo(empty mask) error = %v, want bad request", err)
 	}
-	if _, err := svc.ListTodos(ctx, &v1.ListTodosRequest{PageToken: "bad-token"}); err == nil {
-		t.Fatal("ListTodos(bad token) error = nil, want error")
+	if _, err := svc.ListTodos(ctx, &v1.ListTodosRequest{PageToken: "bad-token"}); !spineerrors.IsBadRequest(err) {
+		t.Fatalf("ListTodos(bad token) = %v, want bad request", err)
 	}
-	if _, err := svc.ListTodos(ctx, &v1.ListTodosRequest{Filter: `unknown:"value"`}); err == nil {
-		t.Fatal("ListTodos(unsupported filter) error = nil, want error")
+	if _, err := svc.ListTodos(ctx, &v1.ListTodosRequest{Filter: `unknown:"value"`}); !spineerrors.IsBadRequest(err) {
+		t.Fatalf("ListTodos(unsupported filter) = %v, want bad request", err)
 	}
-	if _, err := svc.ListTodos(ctx, &v1.ListTodosRequest{OrderBy: "content"}); err == nil {
-		t.Fatal("ListTodos(unsupported order_by) error = nil, want error")
+	if _, err := svc.ListTodos(ctx, &v1.ListTodosRequest{OrderBy: "content"}); !spineerrors.IsBadRequest(err) {
+		t.Fatalf("ListTodos(unsupported order_by) = %v, want bad request", err)
 	}
-	if _, err := svc.DeleteTodo(ctx, &v1.DeleteTodoRequest{Id: missingID}); !kratoserrors.IsNotFound(err) {
+	if _, err := svc.DeleteTodo(ctx, &v1.DeleteTodoRequest{Id: missingID}); !spineerrors.IsNotFound(err) {
 		t.Fatalf("DeleteTodo(missing id) error = %v, want not found", err)
 	}
 }
@@ -403,4 +403,23 @@ func (s *syncTodosStream) Recv() (*v1.SyncTodoRequest, error) {
 func (s *syncTodosStream) Send(event *v1.TodoEvent) error {
 	s.events = append(s.events, event)
 	return nil
+}
+
+func TestTodoServiceRejectsInvalidUpdateMasks(t *testing.T) {
+	ctx := context.Background()
+	svc := newTestTodoService()
+	created, err := svc.CreateTodo(ctx, &v1.CreateTodoRequest{Todo: &v1.Todo{Title: "original"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"missing", "status", "id", "created_at", "updated_at", "title.child"} {
+		_, err := svc.UpdateTodo(ctx, &v1.UpdateTodoRequest{Todo: &v1.Todo{Id: created.Id, Title: "changed"}, UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{path}}})
+		if !spineerrors.IsBadRequest(err) {
+			t.Errorf("mask %q: %v", path, err)
+		}
+	}
+	got, err := svc.GetTodo(ctx, &v1.GetTodoRequest{Id: created.Id})
+	if err != nil || got.Title != "original" {
+		t.Fatalf("invalid mask changed record: %v %v", got, err)
+	}
 }

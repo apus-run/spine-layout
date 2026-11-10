@@ -1,128 +1,92 @@
-# Kratos Project Template
+# Spine service template
 
-A project template for creating new Kratos services with HTTP and gRPC
-transports, protobuf-first APIs, Wire dependency injection, OpenAPI generation,
-and a small CRUD example.
+A Go 1.27.3 service template using Spine HTTP/gRPC transports, protobuf APIs,
+Wire dependency injection, Ent, and MySQL. The Todo service demonstrates CRUD,
+filtering, ordering, pagination, field-mask updates, snapshot streaming and
+bidirectional synchronization.
 
-Use this repository as a starting point for a new service. The included sample
-resource is only reference code for API shape, layering, code generation, and
-testing. Replace it with your own domain model when creating a real project.
+The module path is `github.com/apus-run/spine-layout`. Spine and its OpenTelemetry
+integration are pinned to immutable public commits in `go.mod`. Both Spine
+protobuf generators are pinned in `buf.gen.yaml` and run through Buf.
 
-## Create a New Project
+## Generate, build and test
 
-1. Copy or generate a repository from this template.
-2. Update the Go module path:
-
-```bash
-go mod edit -module github.com/your-org/your-service
-```
-
-3. Replace existing import paths that reference this template module.
-4. Rename the command, service metadata, and sample API package to match your
-   service.
-5. Replace the sample CRUD resource with your own resource.
-6. Regenerate code and verify the project:
-
-```bash
-make all
-go test ./...
-```
-
-## What Is Included
-
-- Kratos HTTP and gRPC server setup.
-- Protobuf API definitions and generated Go code.
-- OpenAPI generation.
-- Wire-based dependency injection.
-- Layered `service`, `biz`, and `data` packages.
-- A lightweight in-memory repository for the sample resource.
-- Unit tests for the service layer.
-- Server-streaming and bidirectional-streaming examples.
-
-## Project Layout
-
-```text
-api/                  Protobuf APIs and generated bindings
-cmd/                  Application entrypoints
-configs/              Local configuration
-internal/server/      HTTP and gRPC server construction
-internal/service/     Transport-facing service methods
-internal/biz/         Usecases, entities, errors, repository interfaces
-internal/data/        Repository implementations
-third_party/          Protobuf dependencies
-openapi.yaml          Generated OpenAPI document
-```
-
-## API Template Practices
-
-The sample CRUD API demonstrates common conventions for Kratos projects:
-
-- Resource-oriented methods: create, get, list, update, delete.
-- HTTP annotations with `google.api.http`.
-- Required fields with `google.api.field_behavior`.
-- List requests with `page_size`, `page_token`, `filter`, and `order_by`.
-- Pagination with `go.einride.tech/aip/pagination`.
-- Partial updates with `google.protobuf.FieldMask` and `fieldmask.Update`.
-- Streaming RPC definitions for one-way and bidirectional streams.
-
-The in-memory data layer intentionally stays simple. It demonstrates flow across
-layers, but does not implement a full query engine. Real repositories can apply
-parsed filters and ordering in SQL, Ent, or another storage layer.
-
-## Development Commands
-
-Install generators:
-
-```bash
+```sh
 make init
-```
-
-Regenerate API bindings and OpenAPI:
-
-```bash
-make api
-```
-
-Regenerate config protobufs:
-
-```bash
-make config
-```
-
-Run all generation steps, Wire, and module cleanup:
-
-```bash
 make all
-```
-
-Build:
-
-```bash
 make build
+go test -race ./...
+go vet ./...
 ```
 
-Test:
+`make all` regenerates API/error bindings, OpenAPI, configuration messages, Ent
+and Wire, then tidies the module. Buf is pinned to v1.75.0. API generation uses
+protoc-gen-go v1.36.11, protoc-gen-go-grpc v1.6.2 and the Spine HTTP/errors
+plugins from commit `a1be599b`. The error annotation schema in
+`api/errors/errors.proto` comes from Spine; only the Todo API is generated.
 
-```bash
-go test ./...
-```
+Generated code belongs with its proto/schema sources. Regenerate after changing
+the module path or imports when creating a service from this template.
 
-## Run Locally
+## Run with MySQL
 
-```bash
+Create a development database and set its DSN through the Spine environment
+prefix. Supply credentials through your environment or secret manager.
+
+```sh
+export SPINE_DATABASE_SOURCE='USER:PASSWORD@tcp(HOST:3306)/DATABASE?parseTime=true&loc=UTC&charset=utf8mb4'
 go run ./cmd/server -conf ./configs
 ```
 
-Default local ports are configured in `configs/config.yaml`:
+HTTP listens on port 8000 and gRPC on port 9000 by default. `SPINE_` settings
+override legacy `KRATOS` settings. Database connection pool defaults are 10 idle
+and 20 open connections, configurable through `max_idle_conns` and
+`max_open_conns`. Timestamps use microsecond precision with MySQL DATETIME(6).
 
-- HTTP: `0.0.0.0:8000`
-- gRPC: `0.0.0.0:9000`
+The supplied local config enables SQL debugging and automatic schema creation.
+For production, set `debug` and `auto_migrate` to false and apply reviewed schema
+migrations before starting the service.
 
-## Docker
+## Business acceptance
 
-```bash
-docker build -t <your-image-name> .
+Use a dedicated MySQL test database:
+
+```sh
+export SPINE_LAYOUT_TEST_DSN='USER:PASSWORD@tcp(HOST:3306)/TEST_DATABASE?parseTime=true&loc=UTC&charset=utf8mb4'
+go test -tags=integration -race -count=1 -timeout=4m -v ./cmd/server
+```
+
+The test builds and starts the actual server executable with temporary config,
+uses the generated HTTP and gRPC clients, and verifies:
+
+- CRUD across HTTP/gRPC, UUIDv7 IDs and stable timestamps.
+- Filtering, ordering, page tokens and field-mask updates, including clearing a
+  boolean value and rejecting unknown/read-only paths.
+- Generated error predicates for invalid requests and missing/deleted records.
+- SSE snapshot events and WebSocket create/update/delete events with clean EOF.
+- SQL soft-delete state, application shutdown and reads after process restart.
+- Eight concurrent readers for 30 seconds, recording request count and latency
+  percentiles with zero failures required.
+
+The database is migrated for the test and only records bearing the run's unique
+prefix are removed. Ordinary unit tests use in-memory SQLite at the data boundary.
+`WatchTodos` emits a snapshot page and then closes. `SyncTodos` processes client
+changes until the send side closes.
+
+CI repeats generation and checks for drift, runs build/race/vet checks, executes
+the MySQL acceptance test, and scans reachable vulnerabilities.
+
+## Create a project
+
+After copying the template, update `go.mod`, proto `go_package` values, source
+imports, the command directory and `cmd/server/main.go` service name, then run
+`make all`. Follow `AGENTS.md` for the DTO/service, DO/biz and PO/data boundaries.
+
+## Container
+
+```sh
+docker build -t your-service .
 docker run --rm -p 8000:8000 -p 9000:9000 \
-  -v </path/to/your/configs>:/data/conf \
-  <your-image-name>
+  -e SPINE_DATABASE_SOURCE \
+  -v /path/to/configs:/data/conf:ro your-service
 ```

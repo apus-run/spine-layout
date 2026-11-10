@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/go-kratos/kratos-layout/internal/biz"
-	"github.com/go-kratos/kratos-layout/internal/data/ent/predicate"
-	"github.com/go-kratos/kratos-layout/internal/data/ent/todo"
+	"github.com/apus-run/spine-layout/internal/biz"
+	"github.com/apus-run/spine-layout/internal/data/ent/predicate"
+	"github.com/apus-run/spine-layout/internal/data/ent/todo"
 )
 
 // TodoUpdate is the builder for updating Todo entities.

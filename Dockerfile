@@ -1,9 +1,9 @@
-FROM golang:1.25 AS builder
+FROM golang:1.27.3 AS builder
 
 COPY . /src
 WORKDIR /src
 
-RUN GOPROXY=https://goproxy.cn make build
+RUN make build
 
 FROM debian:stable-slim
 

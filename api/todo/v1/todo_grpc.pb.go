@@ -48,9 +48,8 @@ type TodoServiceClient interface {
 	// GetTodo returns a single todo item by its id.
 	// Returns NOT_FOUND if no todo exists with the supplied id.
 	GetTodo(ctx context.Context, in *GetTodoRequest, opts ...grpc.CallOption) (*Todo, error)
-	// WatchTodos opens a server-side stream that emits a TodoEvent for every
-	// create, update, or delete that matches the supplied filter and ordering.
-	// The stream remains open until the client cancels or the server terminates it.
+	// WatchTodos emits one snapshot page matching the supplied filter and
+	// ordering, then closes the stream. Use ListTodos to obtain page tokens.
 	WatchTodos(ctx context.Context, in *WatchTodosRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TodoEvent], error)
 	// UpdateTodo applies a partial update to an existing todo item using a
 	// FieldMask. Only the fields listed in update_mask are overwritten; all
@@ -178,9 +177,8 @@ type TodoServiceServer interface {
 	// GetTodo returns a single todo item by its id.
 	// Returns NOT_FOUND if no todo exists with the supplied id.
 	GetTodo(context.Context, *GetTodoRequest) (*Todo, error)
-	// WatchTodos opens a server-side stream that emits a TodoEvent for every
-	// create, update, or delete that matches the supplied filter and ordering.
-	// The stream remains open until the client cancels or the server terminates it.
+	// WatchTodos emits one snapshot page matching the supplied filter and
+	// ordering, then closes the stream. Use ListTodos to obtain page tokens.
 	WatchTodos(*WatchTodosRequest, grpc.ServerStreamingServer[TodoEvent]) error
 	// UpdateTodo applies a partial update to an existing todo item using a
 	// FieldMask. Only the fields listed in update_mask are overwritten; all

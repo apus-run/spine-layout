@@ -3,9 +3,9 @@ package data
 import (
 	"context"
 
-	"github.com/go-kratos/kratos-layout/internal/biz"
-	"github.com/go-kratos/kratos-layout/internal/data/ent"
-	"github.com/go-kratos/kratos-layout/internal/data/ent/todo"
+	"github.com/apus-run/spine-layout/internal/biz"
+	"github.com/apus-run/spine-layout/internal/data/ent"
+	"github.com/apus-run/spine-layout/internal/data/ent/todo"
 
 	"github.com/go-kratos/aip-go/ents"
 	"github.com/google/uuid"

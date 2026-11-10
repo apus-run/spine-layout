@@ -149,9 +149,8 @@ paths:
             tags:
                 - TodoService
             description: |-
-                WatchTodos opens a server-side stream that emits a TodoEvent for every
-                 create, update, or delete that matches the supplied filter and ordering.
-                 The stream remains open until the client cancels or the server terminates it.
+                WatchTodos emits one snapshot page matching the supplied filter and
+                 ordering, then closes the stream. Use ListTodos to obtain page tokens.
             operationId: TodoService_WatchTodos
             parameters:
                 - name: pageSize
@@ -284,7 +283,7 @@ components:
             properties:
                 action:
                     type: string
-                    description: The change that occurred. One of `created`, `updated`, or `deleted`.
+                    description: The event kind. One of `snapshot`, `created`, `updated`, or `deleted`.
                 todo:
                     allOf:
                         - $ref: '#/components/schemas/todo.v1.Todo'

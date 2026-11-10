@@ -1,7 +1,7 @@
 syntax = "proto3";
 package kratos.api;
 
-option go_package = "github.com/go-kratos/kratos-layout/internal/conf;conf";
+option go_package = "github.com/apus-run/spine-layout/internal/conf;conf";
 
 import "google/protobuf/duration.proto";
 
@@ -36,6 +36,9 @@ message Data {
     // Create or update tables from the ent schema on startup. Leave false in
     // production and apply migrations as a separate, reviewed step.
     bool auto_migrate = 4;
+    // Connection pool bounds. Zero selects the application defaults (10/20).
+    int32 max_idle_conns = 5;
+    int32 max_open_conns = 6;
   }
   message Redis {
     string network = 1;

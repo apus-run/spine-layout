@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/go-kratos/kratos-layout/internal/data/ent/todo"
+	"github.com/apus-run/spine-layout/internal/data/ent/todo"
 )
 
 // ent aliases to avoid import conflicts in user's code.

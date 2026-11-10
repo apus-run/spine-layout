@@ -13,6 +13,8 @@ data:
     # changes as a separate reviewed step.
     debug: true
     auto_migrate: true
+    max_idle_conns: 10
+    max_open_conns: 20
   redis:
     addr: ${REDIS_ADDR:127.0.0.1:6379}
     read_timeout: 0.2s

@@ -1,12 +1,12 @@
 package server
 
 import (
-	v1 "github.com/go-kratos/kratos-layout/api/todo/v1"
-	"github.com/go-kratos/kratos-layout/internal/conf"
-	"github.com/go-kratos/kratos-layout/internal/service"
+	v1 "github.com/apus-run/spine-layout/api/todo/v1"
+	"github.com/apus-run/spine-layout/internal/conf"
+	"github.com/apus-run/spine-layout/internal/service"
 
-	"github.com/go-kratos/kratos/v3/middleware/recovery"
-	"github.com/go-kratos/kratos/v3/transport/grpc"
+	"github.com/apus-run/spine/v3/middleware/recovery"
+	"github.com/apus-run/spine/v3/transport/grpc"
 )
 
 // NewGRPCServer new a gRPC server.

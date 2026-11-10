@@ -308,7 +308,10 @@ type Data_Database struct {
 	Debug bool `protobuf:"varint,3,opt,name=debug,proto3" json:"debug,omitempty"`
 	// Create or update tables from the ent schema on startup. Leave false in
 	// production and apply migrations as a separate, reviewed step.
-	AutoMigrate   bool `protobuf:"varint,4,opt,name=auto_migrate,json=autoMigrate,proto3" json:"auto_migrate,omitempty"`
+	AutoMigrate bool `protobuf:"varint,4,opt,name=auto_migrate,json=autoMigrate,proto3" json:"auto_migrate,omitempty"`
+	// Connection pool bounds. Zero selects the application defaults (10/20).
+	MaxIdleConns  int32 `protobuf:"varint,5,opt,name=max_idle_conns,json=maxIdleConns,proto3" json:"max_idle_conns,omitempty"`
+	MaxOpenConns  int32 `protobuf:"varint,6,opt,name=max_open_conns,json=maxOpenConns,proto3" json:"max_open_conns,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -369,6 +372,20 @@ func (x *Data_Database) GetAutoMigrate() bool {
 		return x.AutoMigrate
 	}
 	return false
+}
+
+func (x *Data_Database) GetMaxIdleConns() int32 {
+	if x != nil {
+		return x.MaxIdleConns
+	}
+	return 0
+}
+
+func (x *Data_Database) GetMaxOpenConns() int32 {
+	if x != nil {
+		return x.MaxOpenConns
+	}
+	return 0
 }
 
 type Data_Redis struct {
@@ -458,20 +475,22 @@ const file_conf_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\x96\x03\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xe3\x03\n" +
 	"\x04Data\x125\n" +
 	"\bdatabase\x18\x01 \x01(\v2\x19.kratos.api.Data.DatabaseR\bdatabase\x12,\n" +
-	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x1as\n" +
+	"\x05redis\x18\x02 \x01(\v2\x16.kratos.api.Data.RedisR\x05redis\x1a\xbf\x01\n" +
 	"\bDatabase\x12\x16\n" +
 	"\x06driver\x18\x01 \x01(\tR\x06driver\x12\x16\n" +
 	"\x06source\x18\x02 \x01(\tR\x06source\x12\x14\n" +
 	"\x05debug\x18\x03 \x01(\bR\x05debug\x12!\n" +
-	"\fauto_migrate\x18\x04 \x01(\bR\vautoMigrate\x1a\xb3\x01\n" +
+	"\fauto_migrate\x18\x04 \x01(\bR\vautoMigrate\x12$\n" +
+	"\x0emax_idle_conns\x18\x05 \x01(\x05R\fmaxIdleConns\x12$\n" +
+	"\x0emax_open_conns\x18\x06 \x01(\x05R\fmaxOpenConns\x1a\xb3\x01\n" +
 	"\x05Redis\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12\x12\n" +
 	"\x04addr\x18\x02 \x01(\tR\x04addr\x12<\n" +
 	"\fread_timeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\vreadTimeout\x12>\n" +
-	"\rwrite_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeoutB7Z5github.com/go-kratos/kratos-layout/internal/conf;confb\x06proto3"
+	"\rwrite_timeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeoutB5Z3github.com/apus-run/spine-layout/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_conf_proto_rawDescOnce sync.Once

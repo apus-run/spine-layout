@@ -7,6 +7,7 @@
 package v1
 
 import (
+	_ "github.com/apus-run/spine/v3/errors"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -74,12 +75,12 @@ var File_todo_v1_error_reason_proto protoreflect.FileDescriptor
 
 const file_todo_v1_error_reason_proto_rawDesc = "" +
 	"\n" +
-	"\x1atodo/v1/error_reason.proto\x12\atodo.v1*R\n" +
+	"\x1atodo/v1/error_reason.proto\x12\atodo.v1\x1a\x13errors/errors.proto*^\n" +
 	"\vErrorReason\x12\x14\n" +
-	"\x10TODO_UNSPECIFIED\x10\x00\x12\x12\n" +
-	"\x0eTODO_NOT_FOUND\x10\x01\x12\x19\n" +
-	"\x15TODO_INVALID_ARGUMENT\x10\x02BJ\n" +
-	"\atodo.v1P\x01Z1github.com/go-kratos/kratos-layout/api/todo/v1;v1\xa2\x02\tAPITodoV1b\x06proto3"
+	"\x10TODO_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x0eTODO_NOT_FOUND\x10\x01\x1a\x04\xa8E\x94\x03\x12\x1f\n" +
+	"\x15TODO_INVALID_ARGUMENT\x10\x02\x1a\x04\xa8E\x90\x03BH\n" +
+	"\atodo.v1P\x01Z/github.com/apus-run/spine-layout/api/todo/v1;v1\xa2\x02\tAPITodoV1b\x06proto3"
 
 var (
 	file_todo_v1_error_reason_proto_rawDescOnce sync.Once

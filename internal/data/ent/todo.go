@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/go-kratos/kratos-layout/internal/biz"
-	"github.com/go-kratos/kratos-layout/internal/data/ent/todo"
+	"github.com/apus-run/spine-layout/internal/biz"
+	"github.com/apus-run/spine-layout/internal/data/ent/todo"
 	"github.com/google/uuid"
 )
 

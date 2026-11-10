@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
@@ -38,8 +39,8 @@ type TimeMixin struct {
 // Fields of the TimeMixin.
 func (TimeMixin) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Immutable().Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("created_at").SchemaType(map[string]string{dialect.MySQL: "datetime(6)"}).Immutable().Default(newTimestamp),
+		field.Time("updated_at").SchemaType(map[string]string{dialect.MySQL: "datetime(6)"}).Default(newTimestamp).UpdateDefault(newTimestamp),
 	}
 }
 
@@ -49,3 +50,7 @@ func (TimeMixin) Indexes() []ent.Index {
 		index.Fields("updated_at"),
 	}
 }
+
+// newTimestamp matches MySQL DATETIME(6), keeping create replies consistent
+// with the persisted values returned by subsequent reads and updates.
+func newTimestamp() time.Time { return time.Now().UTC().Truncate(time.Microsecond) }

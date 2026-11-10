@@ -6,8 +6,8 @@ import (
 	"io"
 	"strings"
 
-	v1 "github.com/go-kratos/kratos-layout/api/todo/v1"
-	"github.com/go-kratos/kratos-layout/internal/biz"
+	v1 "github.com/apus-run/spine-layout/api/todo/v1"
+	"github.com/apus-run/spine-layout/internal/biz"
 
 	"github.com/google/uuid"
 	"go.einride.tech/aip/fieldmask"
@@ -15,6 +15,7 @@ import (
 	"go.einride.tech/aip/ordering"
 	"go.einride.tech/aip/pagination"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -72,18 +73,18 @@ func (s *TodoService) ListTodos(ctx context.Context, req *v1.ListTodosRequest) (
 	}
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
-		return nil, err
+		return nil, biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	pageToken, err := pagination.ParsePageToken(req)
 	if err != nil {
-		return nil, err
+		return nil, biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
-		return nil, err
+		return nil, biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	if err := orderBy.ValidateForPaths("id", "title", "created_at", "updated_at"); err != nil {
-		return nil, err
+		return nil, biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	if req.PageSize <= 0 {
 		req.PageSize = defaultPageSize
@@ -114,11 +115,26 @@ func (s *TodoService) UpdateTodo(ctx context.Context, req *v1.UpdateTodoRequest)
 	if req.GetTodo().GetId() == "" || req.GetUpdateMask() == nil || len(req.GetUpdateMask().GetPaths()) == 0 {
 		return nil, biz.ErrTodoInvalidArgument
 	}
+	mask := req.GetUpdateMask()
+	if err := fieldmask.Validate(mask, req.GetTodo()); err != nil {
+		return nil, biz.ErrTodoInvalidArgument.WithCause(err)
+	}
+	if fieldmask.IsFullReplacement(mask) {
+		mask = &fieldmaskpb.FieldMask{Paths: []string{"title", "content", "completed"}}
+	} else {
+		for _, path := range mask.Paths {
+			switch path {
+			case "title", "content", "completed":
+			default:
+				return nil, biz.ErrTodoInvalidArgument
+			}
+		}
+	}
 	current, err := s.GetTodo(ctx, &v1.GetTodoRequest{Id: req.GetTodo().GetId()})
 	if err != nil {
 		return nil, err
 	}
-	fieldmask.Update(req.GetUpdateMask(), current, req.GetTodo())
+	fieldmask.Update(mask, current, req.GetTodo())
 	todo, err := s.uc.UpdateTodo(ctx, convertTodo(current))
 	if err != nil {
 		return nil, err
@@ -154,18 +170,18 @@ func (s *TodoService) WatchTodos(req *v1.WatchTodosRequest, stream v1.TodoServic
 	}
 	filter, err := filtering.ParseFilter(req, declarations)
 	if err != nil {
-		return err
+		return biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	pageToken, err := pagination.ParsePageToken(req)
 	if err != nil {
-		return err
+		return biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	orderBy, err := ordering.ParseOrderBy(req)
 	if err != nil {
-		return err
+		return biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	if err := orderBy.ValidateForPaths("id", "title", "created_at", "updated_at"); err != nil {
-		return err
+		return biz.ErrTodoInvalidArgument.WithCause(err)
 	}
 	if req.PageSize <= 0 {
 		req.PageSize = defaultPageSize

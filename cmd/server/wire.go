@@ -8,17 +8,17 @@ package main
 import (
 	"log/slog"
 
-	"github.com/go-kratos/kratos-layout/internal/biz"
-	"github.com/go-kratos/kratos-layout/internal/conf"
-	"github.com/go-kratos/kratos-layout/internal/data"
-	"github.com/go-kratos/kratos-layout/internal/server"
-	"github.com/go-kratos/kratos-layout/internal/service"
+	"github.com/apus-run/spine-layout/internal/biz"
+	"github.com/apus-run/spine-layout/internal/conf"
+	"github.com/apus-run/spine-layout/internal/data"
+	"github.com/apus-run/spine-layout/internal/server"
+	"github.com/apus-run/spine-layout/internal/service"
 
-	"github.com/go-kratos/kratos/v3"
+	"github.com/apus-run/spine/v3"
 	"github.com/google/wire"
 )
 
-// wireApp init kratos application.
-func wireApp(*conf.Server, *conf.Data, *slog.Logger) (*kratos.App, func(), error) {
+// wireApp init Spine application.
+func wireApp(*conf.Server, *conf.Data, *slog.Logger) (*spine.App, func(), error) {
 	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
 }

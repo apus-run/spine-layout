@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-kratos/kratos-layout/internal/data/ent"
+	"github.com/apus-run/spine-layout/internal/data/ent"
 )
 
 // The TodoFunc type is an adapter to allow the use of ordinary

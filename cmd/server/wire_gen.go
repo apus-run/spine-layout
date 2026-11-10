@@ -7,12 +7,12 @@
 package main
 
 import (
-	"github.com/go-kratos/kratos-layout/internal/biz"
-	"github.com/go-kratos/kratos-layout/internal/conf"
-	"github.com/go-kratos/kratos-layout/internal/data"
-	"github.com/go-kratos/kratos-layout/internal/server"
-	"github.com/go-kratos/kratos-layout/internal/service"
-	"github.com/go-kratos/kratos/v3"
+	"github.com/apus-run/spine-layout/internal/biz"
+	"github.com/apus-run/spine-layout/internal/conf"
+	"github.com/apus-run/spine-layout/internal/data"
+	"github.com/apus-run/spine-layout/internal/server"
+	"github.com/apus-run/spine-layout/internal/service"
+	"github.com/apus-run/spine/v3"
 	"log/slog"
 )
 
@@ -22,8 +22,8 @@ import (
 
 // Injectors from wire.go:
 
-// wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger *slog.Logger) (*kratos.App, func(), error) {
+// wireApp init Spine application.
+func wireApp(confServer *conf.Server, confData *conf.Data, logger *slog.Logger) (*spine.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData)
 	if err != nil {
 		return nil, nil, err

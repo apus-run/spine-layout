@@ -5,12 +5,12 @@ import (
 	stdsql "database/sql"
 	"testing"
 
-	"github.com/go-kratos/kratos-layout/internal/biz"
-	"github.com/go-kratos/kratos-layout/internal/data/ent"
+	"github.com/apus-run/spine-layout/internal/biz"
+	"github.com/apus-run/spine-layout/internal/data/ent"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	kratoserrors "github.com/go-kratos/kratos/v3/errors"
+	spineerrors "github.com/apus-run/spine/v3/errors"
 	"github.com/google/uuid"
 	"go.einride.tech/aip/ordering"
 	_ "modernc.org/sqlite"
@@ -84,7 +84,7 @@ func TestTodoRepoCRUD(t *testing.T) {
 		t.Fatalf("UpdateTodo() id = %v, want %v", updated.ID, created.ID)
 	}
 
-	if _, err := repo.FindByID(ctx, uuid.Must(uuid.NewV7())); !kratoserrors.IsNotFound(err) {
+	if _, err := repo.FindByID(ctx, uuid.Must(uuid.NewV7())); !spineerrors.IsNotFound(err) {
 		t.Fatalf("FindByID(missing) error = %v, want not found", err)
 	}
 }
@@ -112,7 +112,7 @@ func TestTodoRepoDeleteIsSoft(t *testing.T) {
 	}
 
 	// Every read and write path hides it.
-	if _, err := repo.FindByID(ctx, created.ID); !kratoserrors.IsNotFound(err) {
+	if _, err := repo.FindByID(ctx, created.ID); !spineerrors.IsNotFound(err) {
 		t.Fatalf("FindByID() after delete error = %v, want not found", err)
 	}
 	todos, err := repo.ListTodos(ctx, biz.ListLimit(10))
@@ -122,10 +122,10 @@ func TestTodoRepoDeleteIsSoft(t *testing.T) {
 	if len(todos) != 0 {
 		t.Fatalf("ListTodos() len = %d, want 0", len(todos))
 	}
-	if _, err := repo.UpdateTodo(ctx, &biz.Todo{ID: created.ID, Title: "revive"}); !kratoserrors.IsNotFound(err) {
+	if _, err := repo.UpdateTodo(ctx, &biz.Todo{ID: created.ID, Title: "revive"}); !spineerrors.IsNotFound(err) {
 		t.Fatalf("UpdateTodo() after delete error = %v, want not found", err)
 	}
-	if err := repo.DeleteTodo(ctx, created.ID); !kratoserrors.IsNotFound(err) {
+	if err := repo.DeleteTodo(ctx, created.ID); !spineerrors.IsNotFound(err) {
 		t.Fatalf("DeleteTodo() twice error = %v, want not found", err)
 	}
 }
@@ -162,7 +162,7 @@ func TestTodoRepoListPagination(t *testing.T) {
 		t.Fatalf("ListTodos(second page) title = %q, want third", secondPage[0].Title)
 	}
 
-	if _, err := repo.ListTodos(ctx, biz.ListLimit(0)); !kratoserrors.IsBadRequest(err) {
+	if _, err := repo.ListTodos(ctx, biz.ListLimit(0)); !spineerrors.IsBadRequest(err) {
 		t.Fatalf("ListTodos(zero limit) error = %v, want bad request", err)
 	}
 }
